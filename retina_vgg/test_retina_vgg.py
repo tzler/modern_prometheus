@@ -39,11 +39,8 @@ from tfutils import base, data, model, optimizer, utils
 
 from utils import post_process_neural_regression_msplit_preprocessed
 from dataprovider import NeuralDataProvider
-from vgg_model import vgg16
+from vgg_retina_model import vgg16_retina
 
-database_name = 'deep_retina'
-collection_name = 'vgg_models'
-experiment_id = 'vgg16'
 
 class NeuralDataExperiment():
     """
@@ -78,20 +75,20 @@ class NeuralDataExperiment():
 #                        'conv2_1',
 #                        'conv2_2',
 #                        'pool2_2',
-#                        'conv3_1',
-#                        'conv3_2',
-#                        'conv3_3',
-#                        'pool3_3',
-#                        'conv4_1',
-#                        'conv4_2',
-#                        'conv4_3',
-#                        'pool4_3',
-#                        'conv5_1',
-#                        'conv5_2',
-#                        'conv5_3',
-#                        'pool5_3',
-#                        'fc6',
-#                        'fc7',
+                        'conv3_1',
+                        'conv3_2',
+                        'conv3_3',
+                        'pool3_3',
+                        'conv4_1',
+                        'conv4_2',
+                        'conv4_3',
+                        'pool4_3',
+                        'conv5_1',
+                        'conv5_2',
+                        'conv5_3',
+                        'pool5_3']
+                        'fc6',
+                        'fc7',
                         'fc8']
 
 
@@ -101,12 +98,12 @@ class NeuralDataExperiment():
         
         
         extraction_step=None
-        exp_id = 'vgg16'
+        exp_id = 'vgg16_retina'
         data_path = '/datasets/neural_data/tfrecords_with_meta'
         noise_estimates_path = '/datasets/neural_data/noise_estimates.npy'
         batch_size = 128
         seed = 4
-        crop_size = 224
+        crop_size = 24
         gfs_targets = [] 
         extraction_targets = [attr[0] for attr in NeuralDataProvider.ATTRIBUTES] \
             + target_layers
@@ -175,7 +172,7 @@ class NeuralDataExperiment():
         assignment.
         """
         params['model_params'] = {
-            'func': vgg16,
+            'func': vgg16_retina,
         }
 
         """
@@ -192,7 +189,7 @@ class NeuralDataExperiment():
             'port': 24444,
             'dbname': 'deep_retina',
             'collname': 'vgg_models',
-            'exp_id': experiment_id + '_validation',
+            'exp_id': self.Config.exp_id + 'val',
             'save_to_gfs': self.Config.gfs_targets,
         }
 
@@ -209,7 +206,7 @@ class NeuralDataExperiment():
             'port': 24444,
             'dbname': 'deep_retina',
             'collname': 'vgg_models',
-            'exp_id': experiment_id,
+            'exp_id': self.Config.exp_id,
             'do_restore': True,
             'query': {'step': self.Config.extraction_step} \
                     if self.Config.extraction_step is not None else None,

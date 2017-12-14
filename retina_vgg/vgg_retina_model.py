@@ -1,26 +1,23 @@
 from __future__ import absolute_import, division, print_function
 from collections import OrderedDict
+import tensorflow as tf
+import numpy as np
 import os, sys
 
-import numpy as np
-import tensorflow as tf
 
-VGG_PARAM_PATH = os.getcwd() + '/vgg_weights.npz' 
-
-def vgg16_retina(inputs, init='from_file', bn=True, train=True, norm=False, **kwargs):
+def retina_vgg(inputs, init='from_file', bn=True, train=True, norm=False, **kwargs):
 
     m = ConvNetFine(**kwargs)
     dropout = .5 if train else None
-    vgg_param_path = VGG_PARAM_PATH
+    vgg_param_path = os.getcwd() + '/weights/vgg_weights.npz' 
     out = {}
     for k,v in inputs.items():
         out[k] = v
     
-
-############# part one of making imagenet compatable with the retina model
-############# shape(imagenet) = (24, 24, 3, n) 
-############# shape(input_to_retina_model) = (50, 50, 40, n)
-############# so first let's compress the size from 224x 224 --> 50x50 
+    # making imagenet compatable with the retina model (1)
+    # let's compress the size from 224x 224 --> 50x50 
+    # shape(input_to_retina_model) = (50, 50, 40, n)
+    # shape(imagenet) = (24, 24, 3, n) 
 
     images = inputs['images']
     images = tf.image.resize_images(images, [50, 50])
@@ -28,76 +25,88 @@ def vgg16_retina(inputs, init='from_file', bn=True, train=True, norm=False, **kw
     with tf.contrib.framework.arg_scope([m.conv], init='xavier',
                                         stddev=.01, bias=0, activation='relu', weight_decay=1e-3):
 
-########## part two of making imagenet compatable with the retina input 
-########## projecting the 3 rgb channels in imagenet to the 40 (in time) the retina model expects
+        # making imagenet compatable with the retina input (2)
+        # project 3 rgb channels (imagenet) to the 40 that retina model expects
 
         with tf.variable_scope('conv0'):
-            m.conv(40, 1, 1, in_layer=images) 
+            m.conv(40, 1, 1, in_layer=images, trainable=True) 
             if bn:
                 m.bn(train=train)
 
-	# conv1
+	# RETINA
 	with tf.variable_scope('conv1'):
-	    out['conv1'] = m.conv(16, 15, 1, padding='VALID', bias=0, weight_decay=1e-3, activation='relu')
+	    out['conv1'] = m.conv(16, 15, 1, padding='VALID', bias=0, 
+                    weight_decay=1e-3, activation='relu', trainable=False)
 
-	# conv2
 	with tf.variable_scope('conv2'):
-	    out['conv2'] = m.conv(8, 9, 1, padding='VALID', bias=0, weight_decay=1e-3, activation='relu')
-            m.bn(train=train)
-
+	    out['conv2'] = m.conv(8, 9, 1, padding='VALID', bias=0, 
+                    weight_decay=1e-3, activation='relu', trainable=False)
+            m.bn(train=False)
+        
+        # LGN 
         with tf.variable_scope('conv2_0'):
-            m.conv(128, 1, 1)
+            m.conv(128, 1, 1, trainable=True)
 
+        # TEMPORAL CORTEX 
         with tf.variable_scope('conv5'):
             out['conv3_1'] = m.conv(256, 3, 1, init=init, init_file=vgg_param_path,
-                                  init_layer_keys={'weight': 'conv3_1_W', 'bias': 'conv3_1_b'})
+                init_layer_keys={'weight': 'conv3_1_W', 'bias': 'conv3_1_b'}, trainable=True)
+            out['conv1_kernel'] = out['conv3_1']
+
         with tf.variable_scope('conv6'):
             out['conv3_2'] = m.conv(256, 3, 1, init=init, init_file=vgg_param_path,
-                                  init_layer_keys={'weight': 'conv3_2_W', 'bias': 'conv3_2_b'})
+                 init_layer_keys={'weight': 'conv3_2_W', 'bias': 'conv3_2_b'}, trainable=True)
+        
         with tf.variable_scope('conv7'):
             out['conv3_3'] = m.conv(256, 3, 1, init=init, init_file=vgg_param_path,
-                                  init_layer_keys={'weight': 'conv3_3_W', 'bias': 'conv3_3_b'})
+                init_layer_keys={'weight': 'conv3_3_W', 'bias': 'conv3_3_b'}, trainable=True)
             out['pool3_3'] = m.pool(2, 2)
 
 	with tf.variable_scope('conv8'):
-	    m.conv(512, 3, 1, init='from_file', init_file=vgg_param_path,
-		   init_layer_keys={'weight': 'conv4_1_W', 'bias': 'conv4_1_b'})
-	with tf.variable_scope('conv9'):
-	    m.conv(512, 3, 1, init='from_file', init_file=vgg_param_path,
-		   init_layer_keys={'weight': 'conv4_2_W', 'bias': 'conv4_2_b'})
-	with tf.variable_scope('conv10'):
-	    m.conv(512, 3, 1, init='from_file', init_file=vgg_param_path,
-		   init_layer_keys={'weight': 'conv4_3_W', 'bias': 'conv4_3_b'})
-	    m.pool(2, 2)
+	    out['conv4_1'] = m.conv(512, 3, 1, init='from_file', init_file=vgg_param_path,
+	        init_layer_keys={'weight': 'conv4_1_W', 'bias': 'conv4_1_b'}, trainable=True)
+	
+        with tf.variable_scope('conv9'):
+	    out['conv4_2'] = m.conv(512, 3, 1, init='from_file', init_file=vgg_param_path,
+	        init_layer_keys={'weight': 'conv4_2_W', 'bias': 'conv4_2_b'}, trainable=True)
+	
+        with tf.variable_scope('conv10'):
+	    out['conv4_3'] = m.conv(512, 3, 1, init='from_file', init_file=vgg_param_path,
+	        init_layer_keys={'weight': 'conv4_3_W', 'bias': 'conv4_3_b'}, trainable=True)
+	    out['pool4_3'] = m.pool(2, 2)
 
 	with tf.variable_scope('conv11'):
-	    m.conv(512, 3, 1, init='from_file', init_file=vgg_param_path,
-		   init_layer_keys={'weight': 'conv5_1_W', 'bias': 'conv5_1_b'})
-	with tf.variable_scope('conv12'):
-	    m.conv(512, 3, 1, init='from_file', init_file=vgg_param_path,
-		   init_layer_keys={'weight': 'conv5_2_W', 'bias': 'conv5_2_b'})
-	with tf.variable_scope('conv13'):
-	    tmp_pool5_3 = m.conv(512, 3, 1, init='from_file', init_file=vgg_param_path,
-		   init_layer_keys={'weight': 'conv5_3_W', 'bias': 'conv5_3_b'})
+	    out['conv5_1'] = m.conv(512, 3, 1, init='from_file', init_file=vgg_param_path,
+		   init_layer_keys={'weight': 'conv5_1_W', 'bias': 'conv5_1_b'}, trainable=True)
+	
+        with tf.variable_scope('conv12'):
+	    out['conv5_2'] = m.conv(512, 3, 1, init='from_file', init_file=vgg_param_path,
+		   init_layer_keys={'weight': 'conv5_2_W', 'bias': 'conv5_2_b'}, trainable=True)
+	
+        with tf.variable_scope('conv13'):
+	    out['conv5_3'] = m.conv(512, 3, 1, init='from_file', init_file=vgg_param_path,
+		   init_layer_keys={'weight': 'conv5_3_W', 'bias': 'conv5_3_b'}, trainable=True)
 
-###### deleted the last max pooling layer here so that the outputs from the conv layers 
-###### have the right dimensions that the fc layers expect
+        # deleted the last max pooling layer here so that the outputs from the conv layers 
+        # have the right dimensions that the fc layers expect
 
+        # FRONTAL CORTEX 
 	with tf.variable_scope('fc6'):
-	    fc6 = m.fc(4096, dropout=dropout, init='from_file',init_file=vgg_param_path,
-		 init_layer_keys={'weight': 'fc6_W', 'bias': 'fc6_b'})
+	    out['fc6'] = m.fc(4096, dropout=dropout, init='from_file',init_file=vgg_param_path,
+		 init_layer_keys={'weight': 'fc6_W', 'bias': 'fc6_b'}, trainable=True)
 
-        print('output shape from fc6: ', fc6.get_shape().as_list())
 	with tf.variable_scope('fc7'):
-	    m.fc(4096, dropout=dropout, init='from_file',init_file=vgg_param_path,
-		 init_layer_keys={'weight': 'fc7_W', 'bias': 'fc7_b'})
+	    out['fc7'] = m.fc(4096, dropout=dropout, init='from_file',init_file=vgg_param_path,
+		 init_layer_keys={'weight': 'fc7_W', 'bias': 'fc7_b'}, trainable=True)
 
 	with tf.variable_scope('fc8'):
-	    m.fc(1000, activation=None, dropout=None, init='from_file', init_file=vgg_param_path,
-		 init_layer_keys={'weight': 'fc8_W', 'bias': 'fc8_b'})
+	    out['fc8'] = m.fc(1000, activation=None, dropout=None, init='from_file', init_file=vgg_param_path,
+		 init_layer_keys={'weight': 'fc8_W', 'bias': 'fc8_b'}, trainable=True)
 
-        out['pred'] = m.output
+        out['pred'] = out['fc8']
+
         return out, {}
+
 
 class ConvNetOld(object):
     """Basic implementation of ConvNet class compatible with tfutils.

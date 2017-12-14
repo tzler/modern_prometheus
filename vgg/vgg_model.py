@@ -48,7 +48,6 @@ def vgg16(inputs, init='from_file', train=True, norm=False, **kwargs):
         with tf.variable_scope('conv6'):
             out['conv3_2'] = m.conv(256, 3, 1, init=init, init_file=vgg_param_path,
                                   init_layer_keys={'weight': 'conv3_2_W', 'bias': 'conv3_2_b'}, trainable=False)
-
         with tf.variable_scope('conv7'):
             out['conv3_3'] = m.conv(256, 3, 1, init=init, init_file=vgg_param_path,
                                   init_layer_keys={'weight': 'conv3_3_W', 'bias': 'conv3_3_b'}, trainable=False)

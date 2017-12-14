@@ -10,7 +10,7 @@ from dataprovider import ImageNetDataProvider
 
 # specific to final project 
 from vgg_model import vgg16
-database_name = 'deep_retina'
+database_name = 'modern_prometheus'
 collection_name = 'vgg_models'
 experiment_id = 'vgg16' 
 
@@ -27,10 +27,10 @@ class ImageNetExperiment():
         data_path = '/datasets/TFRecord_Imagenet_standard'
         seed = 0
         crop_size = 224
-        thres_loss = 100
-        n_epochs = 2
-        train_steps = 101 # ImageNetDataProvider.N_TRAIN / batch_size * n_epochs
-        val_steps = 100 # np.ceil(ImageNetDataProvider.N_VAL / batch_size).astype(int)
+        thres_loss = 1000
+        n_epochs = 1
+        train_steps = 100 # ImageNetDataProvider.N_TRAIN / batch_size * n_epochs
+        val_steps = 101 # np.ceil(ImageNetDataProvider.N_VAL / batch_size).astype(int)
         print('train_steps: ', train_steps, 'val_steps: ', val_steps) 
     
     def setup_params(self):
@@ -113,7 +113,7 @@ class ImageNetExperiment():
         
         """
         params['model_params'] = {
-            'func': vgg16, #alexnet_model,
+            'func': vgg16, 
         }
 
         """
