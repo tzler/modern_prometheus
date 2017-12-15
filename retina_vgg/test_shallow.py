@@ -65,9 +65,38 @@ class NeuralDataExperiment():
                          'fc6', 
                          'fc7', 'fc8']
         """
-        target_layers = ['conv1',
-                         'conv2', 
-                         'conv3_1']
+        target_layers = [
+			# we only want the layers critical for the comparision
+			# which is whether vgg or vgg_retina is a better fit to neural data
+
+# 			'conv1_1',
+#                        'conv1_2',
+#                        'pool1_2',
+#                        'conv2_1',
+#                        'conv2_2',
+#                        'pool2_2',
+                        'conv3_1',
+                        'conv3_2',
+                        'conv3_3',
+                        'pool3_3',
+                        'conv4_1',
+                        'conv4_2',
+                        'conv4_3',
+                        'pool4_3',
+                        'conv5_1',
+                        'conv5_2',
+                        'conv5_3',
+                        'pool5_3',
+                        'fc6',
+                        'fc7',
+                        'fc8']
+
+
+
+
+        
+        
+        
         extraction_step=None
         exp_id = 'vgg16_retina'
         data_path = '/datasets/neural_data/tfrecords_with_meta'

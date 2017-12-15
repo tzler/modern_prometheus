@@ -88,11 +88,11 @@ class NeuralDataExperiment():
 #                        'pool4_3',
 #                        'conv5_1',
 #                        'conv5_2',
-#                        'conv5_3',
+                        'conv5_3',
 #                        'pool5_3',
-#                        'fc6',
-#                        'fc7',
-                        'fc8']
+                        'fc6',
+                        'fc7']
+#                        'fc8']
 
 
 
@@ -104,7 +104,7 @@ class NeuralDataExperiment():
         exp_id = 'vgg16'
         data_path = '/datasets/neural_data/tfrecords_with_meta'
         noise_estimates_path = '/datasets/neural_data/noise_estimates.npy'
-        batch_size = 128
+        batch_size = 2
         seed = 4
         crop_size = 224
         gfs_targets = [] 
@@ -192,7 +192,7 @@ class NeuralDataExperiment():
             'port': 24444,
             'dbname': 'deep_retina',
             'collname': 'vgg_models',
-            'exp_id': experiment_id + '_validation',
+            'exp_id': experiment_id + '_fc6_fc7_conv5_3',
             'save_to_gfs': self.Config.gfs_targets,
         }
 

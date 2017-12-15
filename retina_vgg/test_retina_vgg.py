@@ -75,20 +75,20 @@ class NeuralDataExperiment():
 #                        'conv2_1',
 #                        'conv2_2',
 #                        'pool2_2',
-                        'conv3_1',
-                        'conv3_2',
-                        'conv3_3',
-                        'pool3_3',
-                        'conv4_1',
-                        'conv4_2',
-                        'conv4_3',
-                        'pool4_3',
-                        'conv5_1',
-                        'conv5_2',
-                        'conv5_3',
-                        'pool5_3']
-                        'fc6',
-                        'fc7',
+#                        'conv3_1',
+#                        'conv3_2',
+#                        'conv3_3',
+#                        'pool3_3',
+#                        'conv4_1',
+#                        'conv4_2',
+#                        'conv4_3',
+#                        'pool4_3',
+#                        'conv5_1',
+#                        'conv5_2',
+#                        'conv5_3',
+#                        'pool5_3']
+#                        'fc6',
+#                        'fc7',
                         'fc8']
 
 
@@ -101,7 +101,7 @@ class NeuralDataExperiment():
         exp_id = 'vgg16_retina'
         data_path = '/datasets/neural_data/tfrecords_with_meta'
         noise_estimates_path = '/datasets/neural_data/noise_estimates.npy'
-        batch_size = 128
+        batch_size = 2
         seed = 4
         crop_size = 24
         gfs_targets = [] 

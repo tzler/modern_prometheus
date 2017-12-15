@@ -10,10 +10,10 @@ from tfutils import base, data, model, optimizer, utils
 from dataprovider import ImageNetDataProvider
 
 # specific to final project 
-from vgg_retina_model import vgg16_retina
+from vgg_retina_model import retina_vgg
 database_name = 'deep_retina'
 collection_name = 'vgg_models'
-experiment_id = 'vgg16_with_fc_retina' 
+experiment_id = 'retina_vgg' 
 
 
 class ImageNetExperiment():
@@ -24,7 +24,7 @@ class ImageNetExperiment():
         """
         Holds model hyperparams and data information.
         """
-        batch_size = 256
+        batch_size = 128
         data_path = '/datasets/TFRecord_Imagenet_standard'
         seed = 0
         crop_size = 224
@@ -114,7 +114,7 @@ class ImageNetExperiment():
         
         """
         params['model_params'] = {
-            'func': vgg16_retina, #alexnet_model,
+            'func': retina_vgg,
         }
 
         """
