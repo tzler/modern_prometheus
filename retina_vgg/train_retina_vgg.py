@@ -1,5 +1,5 @@
 """
-runs vgg16 in it's original format on imagenet. 
+runs retinal models ofvgg16 on imagenet. 
 """
 
 import copy
@@ -29,9 +29,9 @@ class ImageNetExperiment():
         seed = 0
         crop_size = 224
         thres_loss = 100
-        n_epochs = 2
+        n_epochs = 10
         train_steps = int( ImageNetDataProvider.N_TRAIN / batch_size * n_epochs)
-        val_steps = 100 # np.ceil(ImageNetDataProvider.N_VAL / batch_size).astype(int)
+        val_steps =  np.ceil(ImageNetDataProvider.N_VAL / batch_size).astype(int)
         print('train_steps: ', train_steps, 'val_steps: ', val_steps) 
     
     def setup_params(self):
@@ -168,7 +168,7 @@ class ImageNetExperiment():
             'port': 24444,
             'dbname': database_name,
             'collname': collection_name,
-            'exp_id': experiment_id,  
+            'exp_id': experiment_id,   
             'save_valid_freq': 1000,
             'save_filters_freq': 1000,
             'cache_filters_freq': 1000,
