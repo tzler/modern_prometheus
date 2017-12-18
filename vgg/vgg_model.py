@@ -13,10 +13,17 @@ def vgg16(inputs, init='from_file', train=True, norm=False, **kwargs):
     dropout = .5 if train else None
     vgg_param_path = '/home/biota/cs375-group4/final_project/weights/vgg_weights.npz'
     
+    print('input shape: ', inputs['images'].get_shape().as_list())
     
     with tf.contrib.framework.arg_scope([m.conv], init='xavier',
                                         stddev=.01, bias=0, activation='relu', weight_decay=1e-3):
-        
+
+        # preprocessing here instead of with damian's scripts 
+        inputs['images'] = tf.cast(inputs['images'], dtype=tf.float32)
+        im_n, im_h, im_w, im_d = inputs['images'].get_shape().as_list()
+        inputs['images'] = tf.image.resize_images(inputs['images'], [224, 224])
+        print('image size after resizing: ', inputs['images'].get_shape().as_list()) 
+                
         # zero-mean input
         with tf.name_scope('preprocess') as scope:
             mean = tf.constant([123.68, 116.779, 103.939], dtype=tf.float32, shape=[1, 1, 1, 3], name='img_mean')

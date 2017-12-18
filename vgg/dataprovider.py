@@ -43,28 +43,33 @@ class ImageNetDataProvider(data.TFRecordsParallelByFileProvider):
         Image preprocessing function that performs a random crop and flip for training
         and crop or pad for validation
         """
+#        print '\n\n\n\n' + type(ims) + ' data type: ' +  list(ims.dtype) + '\n\n\n'
+        
         dtype = tf.float32
         shape = [self.crop_size, self.crop_size, 3]
 
-        if self.group == 'train':
-            ims = tf.map_fn(lambda img: tf.image.convert_image_dtype(
-                img, dtype=dtype), ims, dtype=dtype)
-            ims = ims - self.IMAGENET_MEAN
-            ims = tf.map_fn(lambda img: tf.random_crop(
-                img, shape), ims)
-            ims = tf.map_fn(lambda img: tf.image.random_flip_left_right(
-                img), ims)
+#        ims = tf.cast(ims, dtype)
+######## commenting this out so that the original vgg is preprocessed the original way 
+#        if self.group == 'train':
+#            ims = tf.map_fn(lambda img: tf.image.convert_image_dtype(
+#                img, dtype=dtype), ims, dtype=dtype)
+#            ims = ims - self.IMAGENET_MEAN
+#            ims = tf.map_fn(lambda img: tf.random_crop(
+#                img, shape), ims)
+#            ims = tf.map_fn(lambda img: tf.image.random_flip_left_right(
+#                img), ims)
+#
+#        elif self.group == 'val':
+#            ims = tf.map_fn(lambda img: tf.image.convert_image_dtype(
+#                img, dtype=dtype), ims, dtype=dtype)
+#            ims = ims - self.IMAGENET_MEAN
+#            ims = tf.map_fn(lambda img: tf.image.resize_image_with_crop_or_pad(
+#                img, shape[0], shape[1]), ims)
+#
+#        else:
+#            raise NotImplementedError(
+#                    'group not valid -  please choose train or val')
 
-        elif self.group == 'val':
-            ims = tf.map_fn(lambda img: tf.image.convert_image_dtype(
-                img, dtype=dtype), ims, dtype=dtype)
-            ims = ims - self.IMAGENET_MEAN
-            ims = tf.map_fn(lambda img: tf.image.resize_image_with_crop_or_pad(
-                img, shape[0], shape[1]), ims)
-
-        else:
-            raise NotImplementedError(
-                    'group not valid -  please choose train or val')
         return ims
 
     def postproc_labels(self, labels):

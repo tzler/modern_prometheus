@@ -23,14 +23,14 @@ class ImageNetExperiment():
         """
         Holds model hyperparams and data information.
         """
-        batch_size = 2
+        batch_size = 128
         data_path = '/datasets/TFRecord_Imagenet_standard'
         seed = 0
         crop_size = 224
         thres_loss = 1000
         n_epochs = 1
-        train_steps = 100 # ImageNetDataProvider.N_TRAIN / batch_size * n_epochs
-        val_steps = 101 # np.ceil(ImageNetDataProvider.N_VAL / batch_size).astype(int)
+        train_steps = ImageNetDataProvider.N_TRAIN / batch_size * n_epochs
+        val_steps = np.ceil(ImageNetDataProvider.N_VAL / batch_size).astype(int)
         print('train_steps: ', train_steps, 'val_steps: ', val_steps) 
     
     def setup_params(self):
