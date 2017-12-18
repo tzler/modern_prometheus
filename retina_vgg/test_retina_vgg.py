@@ -13,25 +13,31 @@ from tfutils import base, data, model, optimizer, utils
 from utils import post_process_neural_regression_msplit_preprocessed
 from dataprovider import NeuralDataProvider
 
+# specific to ret-vgg experiment
 from vgg_retina_model import retina_vgg
-
-small_target = 'fc'
-
-target_layer = {}
-target_layer['conv3'] = ['conv3_1', 'conv3_2', 'conv3_3', 'pool3_3']
-target_layer['conv4'] = ['conv4_1', 'conv4_2', 'conv4_3', 'pool4_3']
-target_layer['conv5'] = ['conv5_1', 'conv5_2', 'conv5_3']
-target_layer['fc'] = ['fc6', 'fc7', 'fc8']
-
-
+# because of memory errors, we have to run this one layer at a time
+layers = {}
+layers['conv3'] = ['conv3_1', 'conv3_2', 'conv3_3', 'pool3_3']
+layers['conv4'] = ['conv4_1', 'conv4_2', 'conv4_3', 'pool4_3']
+layers['conv5'] = ['conv5_1', 'conv5_2', 'conv5_3']
+layers['fc'] = ['fc6', 'fc7', 'fc8']
+ 
 class NeuralDataExperiment():
     """
     Defines the neural data testing experiment
     """
+
+    def __init__(self, target_name, single_layer): 
+        
+        # initialized with __init__ so we can iterate through layers with a for loop
+        self.target_layers = single_layer
+        self.target_name = target_name
+        self.extraction_targets = [attr[0] for attr in NeuralDataProvider.ATTRIBUTES] + self.target_layers
+
     class Config():
         """
         """
-        target_layers = target_layer[small_target]
+
         extraction_step=None
         exp_id = 'retina_vgg'
         data_path = '/datasets/neural_data/tfrecords_with_meta'
@@ -40,8 +46,8 @@ class NeuralDataExperiment():
         seed = 4
         crop_size = 224
         gfs_targets = [] 
-        extraction_targets = [attr[0] for attr in NeuralDataProvider.ATTRIBUTES] \
-            + target_layers
+        #extraction_targets = [attr[0] for attr in NeuralDataProvider.ATTRIBUTES] \
+        #    + target_layers
         assert NeuralDataProvider.N_VAL % batch_size == 0, \
                 ('number of examples not divisible by batch size!')
         val_steps = int(NeuralDataProvider.N_VAL / batch_size)
@@ -78,7 +84,7 @@ class NeuralDataExperiment():
                 },
                 'targets': {
                     'func': self.return_outputs,
-                    'targets': self.Config.extraction_targets,
+                    'targets': self.extraction_targets,
                 },
                 'num_steps': self.Config.val_steps,
                 'agg_func': self.neural_analysis,
@@ -99,7 +105,7 @@ class NeuralDataExperiment():
             'port': 24444,
             'dbname': 'deep_retina',
             'collname': 'vgg_models',
-            'exp_id': self.Config.exp_id + '_val_' + small_target,
+            'exp_id': self.Config.exp_id + '_val_' + self.target_name, 
             'save_to_gfs': self.Config.gfs_targets,
         }
 
@@ -279,7 +285,7 @@ class NeuralDataExperiment():
         and the IT features
         """
         features = {}
-        for layer in self.Config.target_layers:
+        for layer in self.target_layers:
             feats = np.concatenate(results[layer], axis=0)
             feats = np.reshape(feats, [feats.shape[0], -1])
             if num_subsampled_features is not None:
@@ -332,9 +338,9 @@ class NeuralDataExperiment():
             retval['it_regression_%s' % (layer)] = \
                     self.regression_test(features[layer], IT_feats, meta, data_subset)
                 
-#            # categorization test
-#            retval['categorization_%s' % (layer)] = \
-#                    self.categorization_test(features[layer], meta, data_subset)
+            # categorization test
+            retval['categorization_%s' % (layer)] = \
+                    self.categorization_test(features[layer], meta, data_subset)
 #                    
 #            # within-category categorization test
 #            for category in categories:
@@ -351,7 +357,12 @@ if __name__ == '__main__':
     """
     Illustrates how to run the configured model using tfutils
     """
-    base.get_params()
-    m = NeuralDataExperiment()
-    params = m.setup_params()
-    base.test_from_params(**params)
+    for target_name in layers: 
+        
+        single_layer = layers[target_name]
+        print 'target_name: ', list(single_layer)
+
+        base.get_params()
+        m = NeuralDataExperiment(target_name, single_layer)
+        params = m.setup_params()
+        base.test_from_params(**params)
