@@ -1,5 +1,3 @@
-"""
-"""
 from __future__ import division
 import os
 import numpy as np
@@ -35,9 +33,7 @@ class NeuralDataExperiment():
         self.extraction_targets = [attr[0] for attr in NeuralDataProvider.ATTRIBUTES] + self.target_layers
 
     class Config():
-        """
-        """
-
+        
         extraction_step=None
         exp_id = 'retina_vgg'
         data_path = '/datasets/neural_data/tfrecords_with_meta'
@@ -92,14 +88,10 @@ class NeuralDataExperiment():
             }
         }
 
-        """
-        """
         params['model_params'] = {
             'func': retina_vgg,
         }
 
-        """
-        """
         params['save_params'] = {
             'host': 'localhost',
             'port': 24444,
@@ -109,10 +101,6 @@ class NeuralDataExperiment():
             'save_to_gfs': self.Config.gfs_targets,
         }
 
-        """
-        load_params defines how and if a model should be restored from the database.
-
-        """
         params['load_params'] = {
             'host': 'localhost',
             'port': 24444,
