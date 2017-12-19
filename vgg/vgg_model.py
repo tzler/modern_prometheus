@@ -11,16 +11,16 @@ def vgg16(inputs, init='from_file', train=True, norm=False, **kwargs):
     out = inputs 
     m = ConvNetFine(**kwargs)
     dropout = .5 if train else None
-    vgg_param_path = '/home/biota/cs375-group4/final_project/weights/vgg_weights.npz'
+    vgg_param_path = os.getcwd() + '/weights/vgg_weights.npz'
     
     
     with tf.contrib.framework.arg_scope([m.conv], init='xavier',
                                         stddev=.01, bias=0, activation='relu', weight_decay=1e-3):
         
         # zero-mean input
-        with tf.name_scope('preprocess') as scope:
-            mean = tf.constant([123.68, 116.779, 103.939], dtype=tf.float32, shape=[1, 1, 1, 3], name='img_mean')
-            inputs['images'] = inputs['images'] - mean        
+#        with tf.name_scope('preprocess') as scope:
+#            mean = tf.constant([123.68, 116.779, 103.939], dtype=tf.float32, shape=[1, 1, 1, 3], name='img_mean')
+#            inputs['images'] = inputs['images'] - mean        
 
         with tf.variable_scope('conv1'):
             out['conv1_1'] = m.conv(64, 3, 1, init=init, init_file=vgg_param_path, in_layer= inputs['images'], 

@@ -10,9 +10,9 @@ from dataprovider import ImageNetDataProvider
 
 # specific to final project 
 from vgg_model import vgg16
-database_name = 'modern_prometheus'
-collection_name = 'vgg_models'
-experiment_id = 'vgg16' 
+database_name = 'deep_retina'
+collection_name = 'vgg'
+experiment_id = 'reference_damian_preprocessing' 
 
 
 class ImageNetExperiment():
@@ -23,14 +23,14 @@ class ImageNetExperiment():
         """
         Holds model hyperparams and data information.
         """
-        batch_size = 2
+        batch_size = 128
         data_path = '/datasets/TFRecord_Imagenet_standard'
         seed = 0
         crop_size = 224
         thres_loss = 1000
-        n_epochs = 1
-        train_steps = 100 # ImageNetDataProvider.N_TRAIN / batch_size * n_epochs
-        val_steps = 101 # np.ceil(ImageNetDataProvider.N_VAL / batch_size).astype(int)
+        n_epochs = 5
+        train_steps = ImageNetDataProvider.N_TRAIN / batch_size * n_epochs
+        val_steps = 100 # np.ceil(ImageNetDataProvider.N_VAL / batch_size).astype(int)
         print('train_steps: ', train_steps, 'val_steps: ', val_steps) 
     
     def setup_params(self):
@@ -140,8 +140,9 @@ class ImageNetExperiment():
         params['learning_rate_params'] = {
             'func': learning_rate_params_func,
             'boundaries': list(np.array([150000, 300000, 450000]).astype(np.int64)),
-            'values': [0.01, 0.005, 0.001, 0.0005]
-            #'decay_steps': ImageNetDataProvider.N_TRAIN / self.batch_size,
+            
+            'values': [0.001, 0.0000000005, 0.00000000000001, 0.00000000000000005]
+	    #'decay_steps': ImageNetDataProvider.N_TRAIN / self.batch_size,
             #'decay_rate': 0.95,
             #'staircase': True,
         }
@@ -168,10 +169,10 @@ class ImageNetExperiment():
             'dbname': database_name,
             'collname': collection_name,
             'exp_id': experiment_id, #+ '_save', 
-            'save_valid_freq': 1,
-            'save_filters_freq': 1,
-            'cache_filters_freq': 1,
-            'save_metrics_freq': 1,
+            'save_valid_freq': 500,
+            'save_filters_freq': 500,
+            'cache_filters_freq': 500,
+            'save_metrics_freq': 500,
             'save_initial_filters' : True, 
             'save_to_gfs': [],
             'do_save': True,

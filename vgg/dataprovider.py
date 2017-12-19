@@ -30,7 +30,7 @@ class ImageNetDataProvider(data.TFRecordsParallelByFileProvider):
         source_dirs = [os.path.join(data_path, attr) 
                 for attr in ['images', 'labels_0']]
 
-        postprocess = {'images': [(self.postproc_imgs, (), {})]}
+#        postprocess = {'images': [(self.postproc_imgs, (), {})]}
 
         super(ImageNetDataProvider, self).__init__(
             source_dirs,
@@ -128,3 +128,4 @@ class NeuralDataProvider(data.TFRecordsParallelByFileProvider):
                     im, self.crop_size, self.crop_size)
             return im
         return tf.map_fn(lambda im: _postprocess_images(im), ims, dtype=tf.float32)
+	return ims

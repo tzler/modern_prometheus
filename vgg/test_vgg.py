@@ -1,5 +1,5 @@
 """
-Welcome to the second part of the assignment 1! In this section, we will learn
+Welcom to the second part of the assignment 1! In this section, we will learn
 how to analyze our trained model and evaluate its performance on predicting
 neural data.
 Mainly, you will first learn how to load your trained model from the database
@@ -41,9 +41,11 @@ from utils import post_process_neural_regression_msplit_preprocessed
 from dataprovider import NeuralDataProvider
 from vgg_model import vgg16
 
+
 database_name = 'deep_retina'
-collection_name = 'vgg_models'
-experiment_id = 'vgg16'
+collection_name = 'vgg'
+experiment_id = 'reference_damian_preprocessing'
+descriptor = '_conv3'
 
 class NeuralDataExperiment():
     """
@@ -69,29 +71,26 @@ class NeuralDataExperiment():
                          'fc7', 'fc8']
         """
         target_layers = [
-			# we only want the layers critical for the comparision
-			# which is whether vgg or vgg_retina is a better fit to neural data
-
 # 			'conv1_1',
 #                        'conv1_2',
 #                        'pool1_2',
 #                        'conv2_1',
 #                        'conv2_2',
 #                        'pool2_2',
-#                        'conv3_1',
-#                        'conv3_2',
-#                        'conv3_3',
-#                        'pool3_3',
+                        'conv3_1',
+                        'conv3_2',
+                        'conv3_3',
+                        'pool3_3']
 #                        'conv4_1',
 #                        'conv4_2',
 #                        'conv4_3',
 #                        'pool4_3',
 #                        'conv5_1',
 #                        'conv5_2',
-                        'conv5_3',
+#                        'conv5_3']
 #                        'pool5_3',
-                        'fc6',
-                        'fc7']
+#                        'fc6',
+#                        'fc7',
 #                        'fc8']
 
 
@@ -100,8 +99,8 @@ class NeuralDataExperiment():
         
         
         
-        extraction_step=None
-        exp_id = 'vgg16'
+        extraction_step=3000
+        exp_id = experiment_id
         data_path = '/datasets/neural_data/tfrecords_with_meta'
         noise_estimates_path = '/datasets/neural_data/noise_estimates.npy'
         batch_size = 2
@@ -190,9 +189,9 @@ class NeuralDataExperiment():
         params['save_params'] = {
             'host': 'localhost',
             'port': 24444,
-            'dbname': 'deep_retina',
-            'collname': 'vgg_models',
-            'exp_id': experiment_id + '_fc6_fc7_conv5_3',
+            'dbname': database_name,
+            'collname': collection_name, 
+            'exp_id': experiment_id + descriptor,
             'save_to_gfs': self.Config.gfs_targets,
         }
 
@@ -207,8 +206,8 @@ class NeuralDataExperiment():
         params['load_params'] = {
             'host': 'localhost',
             'port': 24444,
-            'dbname': 'deep_retina',
-            'collname': 'vgg_models',
+            'dbname': database_name,
+            'collname': collection_name, 
             'exp_id': experiment_id,
             'do_restore': True,
             'query': {'step': self.Config.extraction_step} \
@@ -435,12 +434,14 @@ class NeuralDataExperiment():
                       ['Faces'], ['Fruits'], ['Planes'], ['Tables']]
         
         for layer in features:
+
             print('Layer: %s' % layer)
             data_subset = data_subsets[0]
 
             retval['rdm_%s' % (layer)] = \
                     self.compute_rdm(features[layer], meta, mean_objects=True)  
-            # RDM correlation
+ 
+           # RDM correlation
             retval['spearman_corrcoef_%s' % (layer)] = \
                     spearmanr(
                             np.reshape(retval['rdm_%s' % (layer)], [-1]),
@@ -452,17 +453,17 @@ class NeuralDataExperiment():
                     self.regression_test(features[layer], IT_feats, meta, data_subset)
                 
             # categorization test
-            retval['categorization_%s' % (layer)] = \
-                    self.categorization_test(features[layer], meta, data_subset)
+#            retval['categorization_%s' % (layer)] = \
+#                    self.categorization_test(features[layer], meta, data_subset)
                     
             # within-category categorization test
-            for category in categories:
-                retval['within_categorization_%s_%s' % (layer, category[0])] = \
-                        self.within_categorization_test(features[layer], meta, data_subset, category)
+#            for category in categories:
+#                retval['within_categorization_%s_%s' % (layer, category[0])] = \
+#                        self.within_categorization_test(features[layer], meta, data_subset, category)
 
             # position regression test
-            retval['pos_regression_%s' % (layer)] = \
-                    self.pos_regression_test(features[layer], meta, data_subset)
+#            retval['pos_regression_%s' % (layer)] = \
+#                    self.pos_regression_test(features[layer], meta, data_subset)
 
         return retval
 
